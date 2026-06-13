@@ -382,7 +382,7 @@ kubectl port-forward svc/argocd-server -n argocd 9090:443
 <details>
 <summary>🎥 Watch the demo</summary>
 
-https://github.com/openmind-systems-lab/argocd-go-gitops/blob/main/media/record-argocd.mp4
+https://github.com/user-attachments/assets/ac014604-9ba0-4e56-b2e9-ac6080e7f2ca
 
 </details>
 
