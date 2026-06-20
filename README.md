@@ -1,14 +1,34 @@
-# 🚀 Argo CD Go GitOps Demo
+<p align="center">
+  <img src="https://raw.githubusercontent.com/openmind-systems-lab/.github/main/profile/logo.png" width="350">
+</p>
 
-This repository demonstrates a complete GitOps workflow using Argo CD, Kubernetes, and a containerized Go application.
+<h1 align="center">Argo CD GitOps Playground</h1>
 
-The project showcases how to manage Kubernetes deployments declaratively with Git as the single source of truth. Changes committed to the repository are automatically synchronized to the cluster by Argo CD, enabling reproducible, auditable, and automated application delivery.
+<p align="center">
+An Open Source Proof of Concept demonstrating GitOps application delivery using Argo CD and Kubernetes.
+</p>
+
+<p align="center">
+
+![License](https://img.shields.io/badge/license-MIT-blue)
+![Open Source](https://img.shields.io/badge/Open%20Source-Yes-brightgreen)
+![Proof of Concept](https://img.shields.io/badge/Type-Proof%20of%20Concept-orange)
+![Kubernetes](https://img.shields.io/badge/Kubernetes-GitOps-blue)
+![Association](https://img.shields.io/badge/OpenMind%20Systems%20Lab-Loi%201901-blue)
+
+</p>
 
 ---
 
-## 🏗️ GitOps Workflow
+# 📖 Overview
 
-The following diagrams illustrate the GitOps deployment flow implemented by this project.
+This Proof of Concept demonstrates how **Argo CD** continuously synchronizes Kubernetes resources from a Git repository.
+
+The repository acts as the **single source of truth**, allowing Kubernetes applications to be deployed declaratively using GitOps principles.
+
+---
+
+# 🏗️ Architecture
 
 <p align="center">
   <img src="media/schema.png" width="900">
@@ -16,84 +36,28 @@ The following diagrams illustrate the GitOps deployment flow implemented by this
 
 ---
 
-## 📦 What is included
+# 🎯 Objective
 
-- `app/`: Go HTTP service with `/` and `/healthz`
-- `Dockerfile`: Multi-stage container build
-- `manifests/`: Kubernetes namespace, deployment, service, and Kustomize configuration
-- `argocd-apps/`: Argo CD `Application` manifest
-- `.github/workflows/`: GitHub Actions workflow to build and publish the application image
-- `scripts/`: Helper scripts for building and deployment
+This Proof of Concept demonstrates how to:
 
----
-
-## 📋 Prerequisites
-
-For local deployment on Docker Desktop Kubernetes, install:
-
-- Docker Desktop with Kubernetes enabled
-- `kubectl`
-- Go (only if you want to run the application locally)
-- A GitHub account (or another Git provider) accessible by Argo CD
-
-Verify that Docker Desktop Kubernetes is your active context:
-
-```bash
-kubectl config current-context
-kubectl get nodes
-```
-
-If needed:
-
-```bash
-kubectl config use-context docker-desktop
-```
+- Install Argo CD on Kubernetes.
+- Deploy an application using GitOps.
+- Synchronize Kubernetes manifests directly from Git.
+- Automatically reconcile configuration drift.
+- Observe application status through the Argo CD UI.
 
 ---
 
-## ▶️ Run the Go application locally
+# ⚙️ Prerequisites
 
-```bash
-go run ./app
-
-curl http://localhost:8080/
-curl http://localhost:8080/healthz
-```
+- Docker Desktop (Kubernetes enabled)
+- kubectl
+- Git repository accessible by Argo CD
+- Container image available in a registry
 
 ---
 
-## 🐳 Build and publish the container image
-
-The application image must be available in a container registry before Kubernetes can deploy it.
-
-Update the image name in:
-
-- `manifests/deployment.yaml`
-- `scripts/build-and-push.sh`
-
-Example using GitHub Container Registry:
-
-```bash
-IMAGE=ghcr.io/<your-org>/argocd-go-gitops:latest ./scripts/build-and-push.sh
-```
-
-Update your deployment:
-
-```yaml
-image: ghcr.io/<your-org>/argocd-go-gitops:latest
-```
-
-Commit and push your repository:
-
-```bash
-git add .
-git commit -m "Initial commit"
-git push
-```
-
----
-
-## ☸️ Install Argo CD on Docker Desktop Kubernetes
+# 📦 Install Argo CD
 
 Create the namespace:
 
@@ -108,53 +72,22 @@ kubectl apply -n argocd \
 -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 ```
 
-Wait until all components are ready:
+Wait for the main components:
 
 ```bash
-kubectl wait --for=condition=available deployment/argocd-server -n argocd --timeout=300s
-kubectl wait --for=condition=available deployment/argocd-repo-server -n argocd --timeout=300s
-kubectl wait --for=condition=available deployment/argocd-redis -n argocd --timeout=300s
-```
+kubectl wait --for=condition=available deployment/argocd-server \
+-n argocd --timeout=300s
 
-Verify:
+kubectl wait --for=condition=available deployment/argocd-repo-server \
+-n argocd --timeout=300s
 
-```bash
-kubectl get pods -n argocd
+kubectl wait --for=condition=available deployment/argocd-redis \
+-n argocd --timeout=300s
 ```
 
 ---
 
-## 🌐 Access the Argo CD UI
-
-Start a local port-forward:
-
-```bash
-kubectl port-forward svc/argocd-server -n argocd 8080:443
-```
-
-Open:
-
-```
-https://localhost:8080
-```
-
-Retrieve the admin password:
-
-```bash
-kubectl -n argocd get secret argocd-initial-admin-secret \
--o jsonpath="{.data.password}" | base64 -d
-```
-
-Login:
-
-```
-Username: admin
-Password: <retrieved password>
-```
-
----
-
-## ⚙️ Configure the Argo CD Application
+# 🚀 Deploy the Demo
 
 Update the repository URL inside:
 
@@ -168,132 +101,111 @@ Example:
 repoURL: https://github.com/openmind-systems-lab/argocd-go-gitops.git
 ```
 
-Deploy the application:
+Deploy the Argo CD Application:
 
 ```bash
 kubectl apply -f argocd-apps/go-demo-application.yaml
 ```
 
-Verify:
+---
+
+# 🔍 Verification
+
+Verify Argo CD components:
 
 ```bash
-kubectl -n argocd get applications
-kubectl -n go-demo get pods
-kubectl -n go-demo get svc
+kubectl get pods -n argocd
+```
+
+Verify the application:
+
+```bash
+kubectl get applications -n argocd
+```
+
+Verify the deployed resources:
+
+```bash
+kubectl get pods -n go-demo
+kubectl get svc -n go-demo
 ```
 
 ---
 
-## ✅ Test the deployed application
+# 🧪 Testing
 
-Forward the service:
+Expose the Argo CD UI:
 
 ```bash
-kubectl -n go-demo port-forward svc/go-demo 8081:80
+kubectl port-forward svc/argocd-server \
+-n argocd \
+8080:443
+```
+
+Retrieve the admin password:
+
+```bash
+kubectl -n argocd get secret argocd-initial-admin-secret \
+-o jsonpath="{.data.password}" | base64 -d
 ```
 
 Open:
 
 ```
-http://localhost:8081
+https://localhost:8080
 ```
 
-Or test using curl:
+Verify the application status is:
+
+```text
+Healthy
+Synced
+```
+
+Expose the demo application:
+
+```bash
+kubectl port-forward svc/go-demo \
+-n go-demo \
+8081:80
+```
+
+Test the application:
 
 ```bash
 curl http://localhost:8081/
+
 curl http://localhost:8081/healthz
 ```
 
 ---
 
-## 💻 Optional: Install the Argo CD CLI
+# 📚 What You Will Learn
 
-### macOS
+After completing this Proof of Concept, you will understand how to:
 
-```bash
-brew install argocd
-```
-
-### Windows
-
-```powershell
-choco install argocd-cli
-```
-
-### Linux
-
-```bash
-curl -sSL -o argocd https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
-
-sudo install -m 555 argocd /usr/local/bin/
-
-rm argocd
-```
-
-Login:
-
-```bash
-argocd login localhost:8080 --username admin --password <PASSWORD> --insecure
-
-argocd app list
-```
+- Install Argo CD.
+- Deploy applications using GitOps.
+- Manage Kubernetes manifests declaratively.
+- Synchronize Kubernetes from Git.
+- Detect and reconcile configuration drift.
+- Monitor application health through the Argo CD Dashboard.
 
 ---
 
-## 🛠️ Troubleshooting
+# 🎥 Demo
 
-### 🚫 Argo CD resources cannot be created
+The following video demonstrates the complete GitOps workflow:
 
-Verify the CRDs are installed:
-
-```bash
-kubectl get crd | grep argoproj
-```
-
----
-
-### 🔐 Argo CD cannot access the Git repository
-
-Verify:
-
-- Repository URL
-- Repository visibility
-- Git credentials (for private repositories)
-
----
-
-### 📥 Kubernetes cannot pull the container image
-
-Verify:
-
-- Image exists in the registry
-- Image tag is correct
-- Image is public or `imagePullSecrets` are configured
-
-Inspect pod events:
-
-```bash
-kubectl describe pod <pod-name> -n go-demo
-```
-
----
-
-### ⚠️ Port 8080 is already in use
-
-Use another local port:
-
-```bash
-kubectl port-forward svc/argocd-server -n argocd 9090:443
-```
-
----
-
-
-## 🚀 Argo CD Go GitOps Demo
+- Install Argo CD
+- Deploy the Application resource
+- Synchronize Kubernetes resources
+- Observe automatic reconciliation
+- Verify the deployed application
+- Explore the Argo CD Dashboard
 
 <details>
-<summary>🎥 Watch the demo</summary>
+<summary>▶️ Watch the demo</summary>
 
 https://github.com/user-attachments/assets/ac014604-9ba0-4e56-b2e9-ac6080e7f2ca
 
@@ -301,9 +213,9 @@ https://github.com/user-attachments/assets/ac014604-9ba0-4e56-b2e9-ac6080e7f2ca
 
 ---
 
-## 🧹 Clean up
+# 🧹 Cleanup
 
-Remove the demo application:
+Delete the demo application:
 
 ```bash
 kubectl delete -f argocd-apps/go-demo-application.yaml
@@ -319,12 +231,26 @@ kubectl delete namespace argocd
 
 ---
 
-## 🔧 Configuration Checklist
+# 📚 References
 
-Before deploying, update the following placeholders:
+- https://argo-cd.readthedocs.io/
+- https://argo-cd.readthedocs.io/en/stable/user-guide/
+- https://argo-cd.readthedocs.io/en/stable/operator-manual/
 
-- `<your-org>`
-- GitHub repository URL
-- Container image
-- Image tag
-- GitHub Container Registry namespace
+---
+
+# 🏛 About OpenMind Systems Lab
+
+OpenMind Systems Lab is an independent French non-profit association dedicated to research, experimental development and technical benchmarking in Cloud Native technologies.
+
+Our mission is to produce practical, reproducible and educational Open Source Proofs of Concept covering Kubernetes, Platform Engineering, Distributed Messaging, Infrastructure Security and Artificial Intelligence.
+
+GitHub Organization:
+
+https://github.com/openmind-systems-lab
+
+---
+
+<p align="center">
+Made with ❤️ by OpenMind Systems Lab
+</p>
